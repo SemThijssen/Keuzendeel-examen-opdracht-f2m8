@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!-- saved from url=(0092)https://app.butlerfortrello.com/c7028220fcfd0c3d23188d628b59471adf1df0ed/powerup-loader.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><script src="./jquery.min.js"></script><script type="text/javascript" src="chrome-extension://hddjedknagmgioblmfdkdkcbeckhnjcj/webResources/css-helper__.js" id="429d4172-87f7-49e3-959a-0791a743d2aa"></script> <script src="./power-up.min.js"></script> <script src="./moment.min.js"></script> <script src="./moment-timezone-with-data-2010-2020.js"></script> <script src="./powerup.js" charset="utf-8"></script><!-- Maintain Sentry version in one place. --> <script src="./bundle.min.js" integrity="sha384-KXjn4K+AYjp1cparCXazrB+5HKdi69IUYz8glD3ySH3fnDgMX3Wg6VTMvXUGr4KB" crossorigin="anonymous"></script> <script>window.addEventListener('load', () => {
+      if (!window.TrelloPowerUp) {
+        if (window.Sentry) {
+          Sentry.captureException(new Error('TrelloPowerUp script failed to load.'));
+        }
+        console.error('[ERROR] TrelloPowerUp script failed to load.');
+      } else {
+        if (window.ButlerPowerUp) {
+          window.ButlerPowerUp.init();
+        }
+      }
+    });</script> </head><body></body></html>
