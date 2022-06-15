@@ -1,11 +1,11 @@
 # Keuzendeel-examen-opdracht-f2m8
 code make it rain: https://github.com/SemThijssen/MakeItRain.git
-•	Onderzoek klant en product (Wulfies)
+•	Onderzoek klant en product (Wulfies)klaar
 •	Persona (Wulfies )klaar 
-•	Userstories(laravel opdracht)klaar
+•	Userstories(make it rain)klaar
 •	Moodboard ( eigen project )klaar
-•	Styleboard (arcade mechanics)klaar
-•	Wireframes (make it rain)klaar 
-•	Visueel ontwerp (XD) (make it rain )
+•	Styleboard (wulfies)klaar
+•	Wireframes (laravel opdracht)klaar 
+•	Visueel ontwerp (XD) (wulfies )klaar
 •	Onderzoek testen met de doelgroep (transformer community)klaar
 
